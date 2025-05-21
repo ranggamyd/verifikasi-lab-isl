@@ -1,0 +1,41 @@
+{
+    "name": "verifikasi-lab-isl",
+    "version": "0.0.0",
+    "private": true,
+    "homepage": "/verifikasi-lab-isl",
+    "repository": "twbs/examples",
+    "license": "MIT",
+    "stackblitz": {
+        "startCommand": "npm start"
+    },
+    "scripts": {
+        "build": "next build",
+        "start": "next dev",
+        "lint": "next lint",
+        "fix": "next lint --fix",
+        "test": "npm run build"
+    },
+    "dependencies": {
+        "@reduxjs/toolkit": "^2.5.1",
+        "@types/node": "^22.7.4",
+        "@types/react": "^18.3.10",
+        "@types/react-dom": "^18.3.0",
+        "axios": "^1.7.9",
+        "bootstrap": "^5.3.3",
+        "lucide-react": "^0.475.0",
+        "next": "^14.2.21",
+        "qr-scanner": "^1.4.2",
+        "react": "^18.3.1",
+        "react-bootstrap": "^2.10.5",
+        "react-dom": "^18.3.1",
+        "react-redux": "^9.2.0",
+        "react-select": "^5.10.0",
+        "sweetalert2": "^11.17.2",
+        "typescript": "^5.6.2"
+    },
+    "devDependencies": {
+        "eslint": "^8.57.1",
+        "eslint-config-next": "^14.2.13",
+        "sass": "^1.79.4"
+    }
+}
