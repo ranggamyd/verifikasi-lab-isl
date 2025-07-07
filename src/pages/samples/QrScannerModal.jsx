@@ -230,8 +230,6 @@ const QRScannerModal = ({ show, onHide }) => {
             setNoSampel("");
             setDataBottles([]);
             handleError(error);
-        } finally {
-            Swal.close();
         }
     };
 
