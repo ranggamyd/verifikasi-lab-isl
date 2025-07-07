@@ -8,6 +8,7 @@ import makeSlice from "@/modules/crypto/makeSlice";
 import { useEffect, useRef, useState } from "react";
 import { useHandleError } from "@/services/useHandleError";
 import { FileText, Home, QrCode, SwitchCamera, X } from "lucide-react";
+import QRScannerModal from "@/pages/samples/QrScannerModal";
 
 const Toast = Swal.mixin({
     toast: true,
@@ -153,36 +154,10 @@ const Navbar = () => {
                 </Link>
             </Nav>
 
-            <Modal
+            <QRScannerModal
                 show={showScanner}
-                fullscreen
-                onHide={() => {
-                    setShowScanner(false);
-                    window.history.pushState(null, "", window.location.href);
-                }}
-            >
-                <Modal.Body className="p-0" style={{ position: "fixed", width: "100%", height: "100dvh" }}>
-                    <video ref={videoRef} style={{ width: "100%", height: "100dvh", objectFit: "cover" }}></video>
-                    <Button variant="outline-secondary" className="d-flex align-items-center" onClick={() => setShowScanner(false)} style={{ position: "absolute", top: "10px", right: "10px" }}>
-                        <X size={25} />
-                    </Button>
-                    <Button
-                        variant="outline-light"
-                        size="lg"
-                        className="d-flex align-items-center"
-                        onClick={toggleCamera}
-                        style={{
-                            position: "absolute",
-                            bottom: "10px",
-                            left: "50%",
-                            transform: "translateX(-50%)",
-                        }}
-                    >
-                        <SwitchCamera size={25} />
-                        <span className="ms-2">Switch Camera</span>
-                    </Button>
-                </Modal.Body>
-            </Modal>
+                onHide={() => setShowScanner(false)}
+            />
         </>
     );
 };

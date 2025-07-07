@@ -19,7 +19,7 @@ export const useHandleError = () => {
     const dispatch = useDispatch();
     const router = useRouter();
     const handleError = error => {
-        if (error.code === 403) {
+        if (error.code === 430) {
             Toast.fire({ icon: "error", title: error.message || "Akses tidak diberikan" })
             router.push("/auth/login");
             dispatch(logoutUser());
