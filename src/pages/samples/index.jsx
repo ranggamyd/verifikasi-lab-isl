@@ -114,73 +114,65 @@ const Samples = () => {
     }, [noSampel]);
 
     return (
-        <>
-            <Head>
-                <title>Daftar Sampel | ISL</title>
-            </Head>
+		<>
+			<Head>
+				<title>Daftar Sampel | ISL</title>
+			</Head>
 
-            <div className="wrapper">
-                <Header />
+			<div className="wrapper">
+				<Header />
 
-                <Container className="container">
-                    <Row className="g-3 mb-4">
-                        <Col xs={12}>
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                <h4 className="mb-0">Daftar Sampel</h4>
-                                <Button 
-                                    variant="primary" 
-                                    size="sm" 
-                                    onClick={() => setShowQRModal(true)} 
-                                    className="d-flex align-items-center"
-                                >
-                                    <Plus size={17} />
-                                    <span className="ms-2">Add Sample</span>
-                                </Button>
-                            </div>
+				<Container className="container">
+					<Row className="g-3 mb-4">
+						<Col xs={12}>
+							<div className="d-flex justify-content-between align-items-center mb-3">
+								<h4 className="mb-0">Daftar Sampel</h4>
+								<Button variant="primary" size="sm" onClick={() => setShowQRModal(true)} className="d-flex align-items-center">
+									<Plus size={17} />
+									<span className="ms-2">Add Sample</span>
+								</Button>
+							</div>
 
-                            {sampleList.map((sample, index) => (
-                                <Card className="mb-3" key={index}>
-                                    <Card.Body className="d-flex align-items-center">
-                                        <div className="ps-3">
-                                            <p className="mb-2">
-                                                No. Sampel : <span className="fw-normal">{sample.no_sample}</span>
-                                            </p>
-                                            <hr className="my-2" />
-                                            <p className="mb-1">
-                                                By : {sample.nama_lengkap} <br />
-                                                <small>
-                                                    {new Date(sample.ftc_laboratory).toLocaleString("en-US", {
-                                                        day: "numeric",
-                                                        month: "long",
-                                                        year: "numeric",
-                                                        hour: "2-digit",
-                                                        minute: "2-digit",
-                                                    })}
-                                                </small>
-                                            </p>
-                                        </div>
-                                    </Card.Body>
-                                </Card>
-                            ))}
+							{sampleList.map((sample, index) => (
+								<Card className="mb-3" key={index}>
+									<Card.Body className="d-flex align-items-center">
+										<div className="ps-3">
+											<p className="mb-2">
+												No. Sampel : <span className="fw-normal">{sample.no_sample}</span>
+											</p>
+											<hr className="my-2" />
+											<p className="mb-1">
+												By : {sample.nama_lengkap} <br />
+												<small>
+													{new Date(sample.ftc_laboratory).toLocaleString("en-US", {
+														day: "numeric",
+														month: "long",
+														year: "numeric",
+														hour: "2-digit",
+														minute: "2-digit",
+													})}
+												</small>
+											</p>
+										</div>
+									</Card.Body>
+								</Card>
+							))}
 
-                            {isLoading && (
-                                <div className="text-center my-3">
-                                    <span>Loading more samples...</span>
-                                </div>
-                            )}
-                        </Col>
-                    </Row>
-                </Container>
+							{isLoading && (
+								<div className="text-center my-3">
+									<span>Loading more samples...</span>
+								</div>
+							)}
+						</Col>
+					</Row>
+				</Container>
 
-                <Navbar />
+				<Navbar />
 
-                <QRScannerModal 
-                    show={showQRModal}
-                    onHide={() => setShowQRModal(false)}
-                />
-            </div>
-        </>
-    );
+				<QRScannerModal show={showQRModal} fetchSamples={fetchSamples} onHide={() => setShowQRModal(false)} />
+			</div>
+		</>
+	);
 };
 
 export default Samples;
