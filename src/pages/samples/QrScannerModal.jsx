@@ -144,12 +144,7 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
 		setIsScannerActive(false);
 	};
 
-	// useEffect(() => {
-	//     // Hanya jalankan pengecekan ketika input tidak dalam fokus
-	//     if (!isInputFocused && scannedValue.trim()) {
-	//         checkBottleData(scannedValue);
-	//     }
-	// }, [scannedValue, isInputFocused]);
+
 
 	const handleInputChange = (e, koding) => {
 		const value = e.target.value;
