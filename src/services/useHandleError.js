@@ -19,13 +19,13 @@ export const useHandleError = () => {
     const dispatch = useDispatch();
     const router = useRouter();
     const handleError = error => {
-        if (error.code === 430) {
-            Toast.fire({ icon: "error", title: error.message || "Akses tidak diberikan" })
-            router.push("/auth/login");
-            dispatch(logoutUser());
-        } else {
-            Toast.fire({ icon: "error", title: error.message || "Terjadi kesalahan" });
-        }
+        if (error.code === 430 || error.code === 403) {
+			Toast.fire({ icon: "error", title: error.message || "Akses tidak diberikan" });
+			router.push("/auth/login");
+			dispatch(logoutUser());
+		} else {
+			Toast.fire({ icon: "error", title: error.message || "Terjadi kesalahan" });
+		}
     };
 
     return { handleError };
