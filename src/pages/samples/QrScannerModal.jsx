@@ -144,12 +144,7 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
 		setIsScannerActive(false);
 	};
 
-	// useEffect(() => {
-	//     // Hanya jalankan pengecekan ketika input tidak dalam fokus
-	//     if (!isInputFocused && scannedValue.trim()) {
-	//         checkBottleData(scannedValue);
-	//     }
-	// }, [scannedValue, isInputFocused]);
+
 
 	const handleInputChange = (e, koding) => {
 		const value = e.target.value;
@@ -229,7 +224,7 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
 			if (response.status === "201") {
 				Toast.fire({ icon: "success", title: response.message });
 				handleClose();
-				fetchSamples();
+				window.location.reload();
 			} else {
 				Toast.fire({ icon: "error", title: response.message || "Terjadi kesalahan", timer: 3000 });
 			}
@@ -304,7 +299,7 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
 										<div key={index} className="col-6 text-center mb-3">
 											<Card onClick={() => setActiveBottle(bottle.koding)} className={`h-100 ${isReady(bottle) ? "bottle-ready" : "bottle-not-ready"}`}>
 												<Card.Body>
-													<Card.Title>{bottle.jenis_botol ?? bottle.parameter}</Card.Title>
+													<Card.Title>{bottle.jenis_botol ?? bottle.type_botol ?? bottle.parameter}</Card.Title>
 													<Card.Text>
 														<strong>Jumlah:</strong> {bottle.jumlah}
 														<br />
@@ -324,7 +319,7 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
 										.map((bottle, index) => (
 											<Form.Group key={index} className="mb-3">
 												<Form.Label>
-													Jumlah Disiapkan <span className="font-weight-bold">{bottle.jenis_botol ?? bottle.parameter}</span>
+													Jumlah Disiapkan <span className="font-weight-bold">{bottle.jenis_botol ?? bottle?.type_botol ?? bottle.parameter}</span>
 												</Form.Label>
 												<Form.Control type="number" value={bottle.jumlah || ""} onChange={(e) => handleInputChange(e, bottle.koding)} min="0" max={bottle.disiapkan} required />
 												<Form.Text className="text-muted">Jumlah yang harus disiapkan: {bottle.disiapkan}</Form.Text>
