@@ -295,20 +295,29 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
 						<>
 							<div className="mb-3">
 								<div className="row">
-									{dataBottles.map((bottle, index) => (
-										<div key={index} className="col-6 text-center mb-3">
-											<Card onClick={() => setActiveBottle(bottle.koding)} className={`h-100 ${isReady(bottle) ? "bottle-ready" : "bottle-not-ready"}`}>
-												<Card.Body>
-													<Card.Title>{bottle.jenis_botol ?? bottle.type_botol ?? bottle.parameter}</Card.Title>
-													<Card.Text>
-														<strong>Jumlah:</strong> {bottle.jumlah}
-														<br />
-														<strong>Disiapkan:</strong> {bottle.disiapkan || "-"}
-													</Card.Text>
-												</Card.Body>
-											</Card>
-										</div>
-									))}
+									{dataBottles.map((bottle, index) => {
+										console.log({ dataBottles });
+										return (
+											<div key={index} className="col-6 text-center mb-3">
+												<Card onClick={() => setActiveBottle(bottle.koding)} className={`h-100 ${isReady(bottle) ? "bottle-ready" : "bottle-not-ready"}`}>
+													<Card.Body>
+														<Card.Title>{bottle.jenis_botol ?? bottle.type_botol ?? bottle.parameter}</Card.Title>
+														<Card.Text>
+															{bottle.kategori === "4-Udara" || bottle.kategori === "5-Emisi" ? (
+																<></>
+															) : (
+																<>
+																	<strong>Jumlah:</strong> {bottle.jumlah}
+																	<br />
+																	<strong>Disiapkan:</strong> {bottle.disiapkan || "-"}
+																</>
+															)}
+														</Card.Text>
+													</Card.Body>
+												</Card>
+											</div>
+										);
+									})}
 								</div>
 							</div>
 
