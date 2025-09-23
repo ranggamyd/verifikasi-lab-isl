@@ -17,9 +17,20 @@ const Toast = Swal.mixin({
     toast.onmouseenter = Swal.stopTimer;
     toast.onmouseleave = Swal.resumeTimer;
   },
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  },
 });
 
 const QRScannerModal = ({ show, onHide, fetchSamples }) => {
+  const scannerRef = useRef(null);
+  const videoRef = useRef(null);
   const scannerRef = useRef(null);
   const videoRef = useRef(null);
 
@@ -31,10 +42,26 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
   const [noSampel, setNoSampel] = useState("");
   const [activeBottle, setActiveBottle] = useState(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [cameras, setCameras] = useState([]);
+  const [currentCamera, setCurrentCamera] = useState("environment");
+  const [scannedValue, setScannedValue] = useState("");
+  const [isScannerActive, setIsScannerActive] = useState(false);
+  const [dataBottles, setDataBottles] = useState([]);
+  const [noSampel, setNoSampel] = useState("");
+  const [activeBottle, setActiveBottle] = useState(null);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const { handleError } = useHandleError();
   const controller = "VerifikasiLabISLController";
+  const { handleError } = useHandleError();
+  const controller = "VerifikasiLabISLController";
 
+  // Initialize and cleanup scanner
+  useEffect(() => {
+    if (!show) {
+      stopScanner();
+      return;
+    }
   // Initialize and cleanup scanner
   useEffect(() => {
     if (!show) {
@@ -46,16 +73,42 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
       stopScanner();
     };
   }, [show]);
+    return () => {
+      stopScanner();
+    };
+  }, [show]);
 
+  const initializeScanner = async () => {
+    try {
+      if (!videoRef.current) return;
   const initializeScanner = async () => {
     try {
       if (!videoRef.current) return;
 
       stopScanner();
+      stopScanner();
 
       const availableCameras = await QrScanner.listCameras();
       setCameras(availableCameras);
+      const availableCameras = await QrScanner.listCameras();
+      setCameras(availableCameras);
 
+      const scanner = new QrScanner(
+        videoRef.current,
+        (result) => {
+          setScannedValue(result.data);
+          setIsScannerActive(false);
+          stopScanner();
+          // Langsung panggil checkBottleData setelah scan
+          checkBottleData(result.data);
+        },
+        {
+          returnDetailedScanResult: true,
+          preferredCamera: currentCamera,
+          highlightScanRegion: true,
+          highlightCodeOutline: true,
+        }
+      );
       const scanner = new QrScanner(
         videoRef.current,
         (result) => {
@@ -84,6 +137,17 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
       setIsScannerActive(false);
     }
   };
+      await scanner.start();
+      scannerRef.current = scanner;
+    } catch (error) {
+      Toast.fire({
+        icon: "error",
+        title: "Please grant camera permission first",
+      });
+      console.error("Scanner initialization error:", error);
+      setIsScannerActive(false);
+    }
+  };
 
   const stopScanner = () => {
     if (scannerRef.current) {
@@ -91,7 +155,20 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
       scannerRef.current = null;
     }
   };
+  const stopScanner = () => {
+    if (scannerRef.current) {
+      scannerRef.current.destroy();
+      scannerRef.current = null;
+    }
+  };
 
+  useEffect(() => {
+    if (isScannerActive) {
+      initializeScanner();
+    } else {
+      stopScanner();
+    }
+  }, [isScannerActive, currentCamera]);
   useEffect(() => {
     if (isScannerActive) {
       initializeScanner();
@@ -112,7 +189,27 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
       });
     }
   };
+  const toggleCamera = async () => {
+    if (cameras.length > 1) {
+      setCurrentCamera((prev) =>
+        prev === "environment" ? "user" : "environment"
+      );
+    } else {
+      Toast.fire({
+        icon: "error",
+        title: "Only one camera available",
+      });
+    }
+  };
 
+  const handleClose = () => {
+    setIsScannerActive(false);
+    setScannedValue("");
+    setDataBottles([]);
+    setNoSampel("");
+    setActiveBottle(null);
+    onHide();
+  };
   const handleClose = () => {
     setIsScannerActive(false);
     setScannedValue("");
@@ -137,7 +234,25 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
   //         });
   //     }
   // };
+  // const handleSubmit = () => {
+  //     if (scannedValue.trim()) {
+  //         onScanResult({
+  //             noSampel,
+  //             dataBottles,
+  //             activeBottle
+  //         });
+  //         handleClose();
+  //     } else {
+  //         Toast.fire({
+  //             icon: "error",
+  //             title: "Please scan a QR code or enter a value manually",
+  //         });
+  //     }
+  // };
 
+  const handleScanQR = () => {
+    setIsScannerActive(true);
+  };
   const handleScanQR = () => {
     setIsScannerActive(true);
   };
@@ -145,7 +260,20 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
   const handleCloseScanner = () => {
     setIsScannerActive(false);
   };
+  const handleCloseScanner = () => {
+    setIsScannerActive(false);
+  };
 
+  const handleInputChange = (e, koding) => {
+    const value = e.target.value;
+    setDataBottles((prevBottles) =>
+      prevBottles.map((bottle) =>
+        bottle.koding === koding
+          ? { ...bottle, jumlah: parseInt(value) || 0 }
+          : bottle
+      )
+    );
+  };
   const handleInputChange = (e, koding) => {
     const value = e.target.value;
     setDataBottles((prevBottles) =>
@@ -164,7 +292,23 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
       bottle.disiapkan.toString() === bottle.jumlah.toString()
     );
   };
+  const isReady = (bottle) => {
+    return (
+      bottle.disiapkan &&
+      bottle.jumlah &&
+      bottle.disiapkan.toString() === bottle.jumlah.toString()
+    );
+  };
 
+  const checkBottleData = async (value) => {
+    Swal.fire({
+      title: "Loading...",
+      text: "Harap tunggu sedang mengecek daftar botol",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
   const checkBottleData = async (value) => {
     Swal.fire({
       title: "Loading...",
@@ -180,7 +324,15 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
         { no_sampel: value },
         makeSlice(controller, "checkBottle2")
       );
+    try {
+      const response = await Api.fetchGet(
+        { no_sampel: value },
+        makeSlice(controller, "checkBottle2")
+      );
 
+      if (response.status === "200") {
+        setNoSampel(response.no_sampel);
+        const bottlesWithDisiapkan = response.data_botol;
       if (response.status === "200") {
         setNoSampel(response.no_sampel);
         const bottlesWithDisiapkan = response.data_botol;
@@ -196,11 +348,29 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
           } else {
             initialData = response.data_scan;
           }
+        setDataBottles((prevBottles) => {
+          let initialData = [];
+          if (
+            prevBottles &&
+            prevBottles.length > 0 &&
+            noSampel === response.no_sampel
+          ) {
+            initialData = prevBottles;
+          } else {
+            initialData = response.data_scan;
+          }
 
+          const baseArray = initialData;
           const baseArray = initialData;
 
           const combined = [...baseArray];
+          const combined = [...baseArray];
 
+          response.data_botol.forEach((newItem) => {
+            const key = newItem.koding;
+            const existingIndex = combined.findIndex(
+              (item) => item.koding === key
+            );
           response.data_botol.forEach((newItem) => {
             const key = newItem.koding;
             const existingIndex = combined.findIndex(
@@ -210,7 +380,42 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
             if (existingIndex !== -1) {
               const existing = combined[existingIndex];
               // console.log("Updating existing:", existing, "with:", newItem);
+            if (existingIndex !== -1) {
+              const existing = combined[existingIndex];
+              // console.log("Updating existing:", existing, "with:", newItem);
 
+              combined[existingIndex] = {
+                ...existing,
+                ...newItem,
+                jumlah:
+                  existing.jumlah >= existing.disiapkan
+                    ? existing.disiapkan
+                    : (parseInt(existing.jumlah) || 0) +
+                      (parseInt(newItem.add) || 0),
+              };
+            } else {
+              // console.log("Adding new item:", newItem);
+              combined.push({ ...newItem, jumlah: 0 });
+            }
+          });
+          return combined;
+        });
+        setActiveBottle(bottlesWithDisiapkan[0]?.koding || null);
+        Toast.fire({ icon: "success", title: response.message });
+      } else {
+        setNoSampel("");
+        setDataBottles([]);
+        Toast.fire({
+          icon: "error",
+          title: response.message || "Terjadi kesalahan",
+        });
+      }
+    } catch (error) {
+      setNoSampel("");
+      setDataBottles([]);
+      handleError(error);
+    }
+  };
               combined[existingIndex] = {
                 ...existing,
                 ...newItem,
@@ -280,7 +485,65 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
     }
     return bottle.jenis_botol || bottle.type_botol || bottle.parameter || "-";
   };
+  const handleSubmitData = async () => {
+    try {
+      const response = await Api.fetchPost(
+        {
+          no_sampel: noSampel,
+          data_botol: dataBottles,
+          scanned_data: scannedValue,
+        },
+        makeSlice(controller, "storeBottle")
+      );
+      if (response.status === "201") {
+        Toast.fire({ icon: "success", title: response.message });
+        handleClose();
+        window.location.reload();
+      } else {
+        Toast.fire({
+          icon: "error",
+          title: response.message || "Terjadi kesalahan",
+          timer: 3000,
+        });
+      }
+    } catch (error) {
+      Toast.fire({
+        icon: "error",
+        title: error.message || "Terjadi kesalahan",
+        timer: 3000,
+      });
+    }
+  };
 
+  const getBottleLabel = (bottle) => {
+    if (typeof bottle.jenis_botol === "object") {
+      return bottle.jenis_botol.parameter;
+    }
+    return bottle.jenis_botol || bottle.type_botol || bottle.parameter || "-";
+  };
+
+  return (
+    <>
+      <style jsx global>{`
+        .qr-scanner-region {
+          border: 2px solid transparent !important;
+          border-radius: 12px !important;
+          background: linear-gradient(
+            135deg,
+            #6dd5ed,
+            #2193b0
+          ); /* Gradient biru */
+          padding: 2px; /* Agar border gradient terlihat */
+        }
+        .qr-scanner-region > div {
+          border: 2px solid transparent !important;
+          background: linear-gradient(
+            135deg,
+            #00ff87,
+            #60efff
+          ); /* Hijau to Cyan */
+          border-radius: 8px !important;
+        }
   return (
     <>
       <style jsx global>{`
@@ -313,7 +576,26 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
           border-color: #88d4ab !important;
           color: #155724 !important;
         }
+        .bottle-ready {
+          background: linear-gradient(
+            135deg,
+            #d4edda,
+            #a8e6cf
+          ) !important; /* Hijau lembut */
+          border-color: #88d4ab !important;
+          color: #155724 !important;
+        }
 
+        .bottle-not-ready {
+          background: linear-gradient(
+            135deg,
+            #fdfbfb,
+            #ebf1d1
+          ) !important; /* Krem lembut */
+          border-color: #d6d8c6 !important;
+          color: #856404 !important;
+        }
+      `}</style>
         .bottle-not-ready {
           background: linear-gradient(
             135deg,
@@ -442,7 +724,76 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
           </div>
         </Modal.Body>
       </Modal>
+          <div className="d-flex justify-content-end gap-2 mt-4">
+            <Button variant="danger" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSubmitData}
+              disabled={!scannedValue.trim()}
+            >
+              Submit
+            </Button>
+          </div>
+        </Modal.Body>
+      </Modal>
 
+      {/* Fullscreen Scanner Modal */}
+      {isScannerActive && (
+        <div
+          className="scanner-overlay"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100vh",
+            backgroundColor: "black",
+            zIndex: 9999,
+          }}
+        >
+          <video
+            ref={videoRef}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+          <Button
+            variant="outline-secondary"
+            className="d-flex align-items-center"
+            onClick={handleCloseScanner}
+            style={{
+              position: "absolute",
+              top: "20px",
+              right: "20px",
+              zIndex: 10000,
+            }}
+          >
+            <X size={25} />
+          </Button>
+          <Button
+            variant="outline-light"
+            size="lg"
+            className="d-flex align-items-center"
+            onClick={toggleCamera}
+            style={{
+              position: "absolute",
+              bottom: "20px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 10000,
+            }}
+          >
+            <SwitchCamera size={25} />
+            <span className="ms-2">Switch Camera</span>
+          </Button>
+        </div>
+      )}
+    </>
+  );
       {/* Fullscreen Scanner Modal */}
       {isScannerActive && (
         <div
@@ -501,3 +852,4 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
 };
 
 export default QRScannerModal;
+
