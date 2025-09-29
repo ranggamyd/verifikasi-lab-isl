@@ -257,7 +257,7 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
       if (response.status === "201") {
         Toast.fire({ icon: "success", title: response.message });
         handleClose();
-        window.location.reload();
+        fetchSamples();
       } else {
         Toast.fire({
           icon: "error",
