@@ -254,21 +254,25 @@ const QRScannerModal = ({ show, onHide, fetchSamples }) => {
         },
         makeSlice(controller, "storeBottle")
       );
-      if (response.status === "201") {
-        Toast.fire({ icon: "success", title: response.message });
+
+      if (response?.status === "201") {
+        Toast.fire({ icon: "success", title: response?.message });
         handleClose();
         fetchSamples();
       } else {
         Toast.fire({
           icon: "error",
-          title: response.message || "Terjadi kesalahan",
+          title: response?.message || "Terjadi kesalahan",
           timer: 3000,
         });
       }
     } catch (error) {
       Toast.fire({
         icon: "error",
-        title: error.message || "Terjadi kesalahan",
+        title:
+          error?.response?.data?.message ||
+          error.message ||
+          "Terjadi kesalahan",
         timer: 3000,
       });
     }
